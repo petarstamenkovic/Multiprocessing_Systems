@@ -18,14 +18,16 @@ int main(void)
 	
 	int niz[csize];
 	
-	srand(time(0) + prank);
-	n = 10*prank + rand()%10;
+	//srand(time(0) + prank);
+	//n = 10*prank + rand()%10;
 	
 	// Svi procesi salju svima
 	for(int i = 0 ; i<csize ; i++)
 	{
 		if(i != prank)
 		{
+			srand(time(0) + prank + i);
+			n = 10*prank + rand()%10;
 			MPI_Send(&n,1, MPI_INT, i, 0, MPI_COMM_WORLD);
 		}
 	}
@@ -42,12 +44,15 @@ int main(void)
 	// Svi procesi salju nultom
 	if(prank != 0)
 	{
-		sprintf(gret,"Process %d recieved: ",prank);
-		for(int i = 0 ; i<csize-1 ; i++)
+		sprintf(gret,"\nProcess %d recieved: ",prank);
+		for(int i = 0 ; i<csize ; i++)
 		{
-			 char num_str[MAX_STRING];
-            		 sprintf(num_str, " %d", niz[i]);
-            		 strcat(gret, num_str);
+			 if(prank != i)
+			 {
+				 char num_str[MAX_STRING];
+		    		 sprintf(num_str, " %d", niz[i]);
+		    		 strcat(gret, num_str);
+			 }
 		} 
 		MPI_Send(gret,strlen(gret)+1,MPI_CHAR,0,0,MPI_COMM_WORLD);
 	}
@@ -60,7 +65,7 @@ int main(void)
 		{
 			if(i != 0)
 			{
-				printf("%d \n",niz[i]);
+				printf("%d ",niz[i]);
 			}
 		}
 		for(int i = 1 ; i < csize ; i++)
