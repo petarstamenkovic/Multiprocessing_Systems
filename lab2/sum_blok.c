@@ -33,7 +33,7 @@ int main(int argc, char* argv[])
     double s = MPI_Wtime();
     double i = (double) prank;
     double ds =(double) csize;
-    int limit = (int)floor(n/csize);
+    int limit = (int)ceil(n/csize);
     int loc_start = i*limit + 1;
     int loc_end = limit*(i+1);
 
@@ -42,7 +42,10 @@ int main(int argc, char* argv[])
  
     for(int p = loc_start ; p <= loc_end ; p++)
     {
-      	sum = sum + p;
+    	if(p <= n)
+    	{
+      	   sum = sum + p;
+      	}
     }
   	
     double tsum;    // Total sum, promenljiva u kojoj se smesta suma svih procesa pojedinacno (sum)
