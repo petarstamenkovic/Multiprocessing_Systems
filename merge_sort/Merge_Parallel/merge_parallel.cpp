@@ -96,17 +96,36 @@ int main(int argc, char*argv[])
 	int tc = strtol(argv[1],NULL,10);
 	int n = strtol(argv[2],NULL,10); 
 	
+	// Start measuring time
+	double s = omp_get_wtime();
+	
 	int array[n];// = {9,8,10,5,4,1,8,2};
 	for(int i = 0 ; i < n ; i++)
 	{
 		srand((unsigned) time(&t) + i);
-		array[i] = rand()%50; 
+		array[i] = rand()%200; 
 	}
+	
+	FILE *fp_in = fopen("input.txt","w");
+	if(fp_in == NULL)
+	{
+		cout << "Failed to open a file" << endl;
+		return 1;
+	}
+	
+	for(int i = 0; i < n ; i++)
+	{
+		fprintf(fp_in,"%d ",array[i]);
+	}
+	fclose(fp_in);
+	cout << "Input is stored in input.txt." << endl;
 	
 
 	
-	cout << "Given array is \n";
-	printArray(array, n);
+	//cout << "Given array is \n";
+	//printArray(array, n);
+	
+	// This was first attempt for a block distrubtion 	
 /*
 	#pragma omp parallel num_threads(tc) 
 	{
@@ -123,35 +142,54 @@ int main(int argc, char*argv[])
 
 	mergeSort(array, 0, n - 1);
 */	
+	
 
 	#pragma omp parallel num_threads(tc) 
 	{
 	
+	    // Blocked distribution - Found a way to do it even for odd numbers
 	    int trank = omp_get_thread_num();	
 	    double i = (double) trank;
 	    double ds =(double) tc;
 	    int loc_start  = n*i/ds;
 	    int loc_end = n*(i + 1)/ds-1;
-	    printf("Start = %d, end = %d\n", loc_start, loc_end);
+	    //printf("Start = %d, end = %d\n", loc_start, loc_end);
 	    mergeSort(array,loc_start,loc_end);
 	    
 	}
 
 	mergeSort(array, 0, n - 1);
 
-
-	// Loop that tests if elementes are sorted!
+	// Loop that tests if elementes are sorted -- Uncomment to test it
+	/*int max = array[n-1];
+	
 	for(int i = 0 ; i!=n ; i++)
-	{
-		if(array[i] > array[i+1])
+	{ 
+		if(array[i] > max)
 			printf("\nNot good!\n");
-		
 	}
+        */
 
-
-
-	cout << "\nSorted array is \n";
-	printArray(array, n);
+	//cout << "\nSorted array is \n";
+	//printArray(array, n);
+	
+	FILE *fp_out = fopen("res.txt","w");
+	if(fp_out == NULL)
+	{
+		cout << "Failed to open a file" << endl;
+		return 1;
+	}
+	
+	for(int i = 0; i < n ; i++)
+	{
+		fprintf(fp_out,"%d ",array[i]);
+	}
+	fclose(fp_out);
+	cout << "Results are stored in res.txt." << endl;
+	
+	// End measuring time
+ 	s = (omp_get_wtime() - s) * 1000.0;	
+	cout << "\nTime elapsed is : " << s << "ms" << endl;
 	return 0;
 }
 

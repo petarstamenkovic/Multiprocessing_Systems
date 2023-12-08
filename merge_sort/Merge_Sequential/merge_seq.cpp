@@ -115,16 +115,16 @@ int main()
     for(int i = 0; i<n ; i++)
     {
         srand(i);
-        inital_array[i] = rand()%50;
+        inital_array[i] = rand()%500;
     }
     
-	cout << "Given array is "<<endl; 
-	printArray(inital_array, n); 
+	//cout << "Given array is "<<endl; 
+	//printArray(inital_array, n); 
 
 	mergeSort(inital_array, 0, n - 1); 
 
-	cout << "Sorted array is "<<endl; 
-	printArray(inital_array, n); 
+	//cout << "Sorted array is "<<endl; 
+	//printArray(inital_array, n); 
 	
 	auto stop = high_resolution_clock::now();
 	auto duration = duration_cast<milliseconds>(stop - start);
