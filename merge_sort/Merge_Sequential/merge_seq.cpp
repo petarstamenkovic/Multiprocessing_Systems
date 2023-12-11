@@ -2,21 +2,27 @@
 #include <iostream> 
 #include<cstdlib>
 #include <chrono>
+#include <vector>
 using namespace std::chrono;
 using namespace std; 
 
 // Merges two subarrays of array[]. 
 // First subarray is arr[begin..mid] 
 // Second subarray is arr[mid+1..end] 
-void merge(int array[], int const left, 
+void merge(std::vector<int>& array, int const left, 
 		int const mid, int const right) 
 { 
 	auto const subArrayOne = mid - left + 1; 
 	auto const subArrayTwo = right - mid; 
 
+	// Create temp vectors
+	std::vector<int> leftArray(subArrayOne);
+	std::vector<int> rightArray(subArrayTwo);
+
+	// Uncomment for an array variant
 	// Create temp arrays 
-	auto *leftArray = new int[subArrayOne], 
-		*rightArray = new int[subArrayTwo]; 
+	//auto *leftArray = new int[subArrayOne], 
+	//	*rightArray = new int[subArrayTwo]; 
 
 	// Copy data to temp arrays leftArray[] 
 	// and rightArray[] 
@@ -78,7 +84,7 @@ void merge(int array[], int const left,
 // begin is for left index and end is 
 // right index of the sub-array 
 // of arr to be sorted */ 
-void mergeSort(int array[], 
+void mergeSort(vector<int>& array, 
 			int const begin, 
 			int const end) 
 { 
@@ -104,24 +110,32 @@ void printArray(int A[], int size)
 // Driver code 
 int main() 
 { 
-
-    auto start = high_resolution_clock::now();
-    int n,x;
-    cout << "Insert a lenght of an array: " << endl;
-    cin >> n ;
+	time_t t;
+   	int n,x;
+   	cout << "Insert a lenght of an array: " << endl;
+  	cin >> n ;
     
-    int inital_array[n];
+   	 //int inital_array[n];
+    	std::vector<int> array;
     
-    for(int i = 0; i<n ; i++)
-    {
-        srand(i);
-        inital_array[i] = rand()%500;
-    }
+    	auto start = high_resolution_clock::now();
+    	//for(int i = 0; i<n ; i++)
+   	 //{
+   	 //   srand(i);
+   	 //    inital_array[i] = rand()%500;
+   	 //}
+    
+	for(int i = 0 ; i < n ; i++)
+	{
+		srand((unsigned) time(&t) + i);
+		//array[i] = rand()%200;
+		array.push_back(rand()%500); 
+	}
     
 	//cout << "Given array is "<<endl; 
 	//printArray(inital_array, n); 
 
-	mergeSort(inital_array, 0, n - 1); 
+	mergeSort(array, 0, n - 1); 
 
 	//cout << "Sorted array is "<<endl; 
 	//printArray(inital_array, n); 

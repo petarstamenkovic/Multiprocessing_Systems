@@ -2,22 +2,27 @@
 #include <omp.h>
 #include <time.h>
 #include <math.h>
-// C++ program for Merge Sort
 #include <bits/stdc++.h>
+#include <vector>
 using namespace std;
 
 // Merges two subarrays of array[].
 // First subarray is arr[begin..mid]
 // Second subarray is arr[mid+1..end]
-void merge(int array[], int const left, int const mid,
+void merge(std::vector<int>& array, int const left, int const mid,
 		int const right)
 {
 	int const subArrayOne = mid - left + 1;
 	int const subArrayTwo = right - mid;
 
+	// Create temp vectors
+	std::vector<int> leftArray(subArrayOne);
+	std::vector<int> rightArray(subArrayTwo);
+
+	// Uncomment this for an array version
 	// Create temp arrays
-	auto *leftArray = new int[subArrayOne],
-		*rightArray = new int[subArrayTwo];
+	//auto *leftArray = new int[subArrayOne],
+	//	*rightArray = new int[subArrayTwo];
 
 	// Copy data to temp arrays leftArray[] and rightArray[]
 	for (auto i = 0; i < subArrayOne; i++)
@@ -62,13 +67,14 @@ void merge(int array[], int const left, int const mid,
 		indexOfSubArrayTwo++;
 		indexOfMergedArray++;
 	}
-	delete[] leftArray;
-	delete[] rightArray;
+	// Uncomment for an array variant
+	//delete[] leftArray;
+	//delete[] rightArray;
 }
 
 // begin is for left index and end is right index
 // of the sub-array of arr to be sorted
-void mergeSort(int array[], int const begin, int const end)
+void mergeSort(vector<int>& array, int const begin, int const end)
 {
 	if (begin >= end)
 		return;
@@ -99,12 +105,15 @@ int main(int argc, char*argv[])
 	// Start measuring time
 	double s = omp_get_wtime();
 	
-	int array[n];// = {9,8,10,5,4,1,8,2};
+	std::vector<int> array;
+	//int array[n];// = {9,8,10,5,4,1,8,2};
 	for(int i = 0 ; i < n ; i++)
 	{
 		srand((unsigned) time(&t) + i);
-		array[i] = rand()%200; 
+		//array[i] = rand()%200;
+		array.push_back(rand()%500); 
 	}
+	
 	
 	FILE *fp_in = fopen("input.txt","w");
 	if(fp_in == NULL)
@@ -121,30 +130,16 @@ int main(int argc, char*argv[])
 	cout << "Input is stored in input.txt." << endl;
 	
 
-	
+	// Uncomment to print an initial array in terminal
 	//cout << "Given array is \n";
+	//for(int i = 0; i < (int)array.size() ; i++)
+	//{
+	//	printf("%d ",array[i]);
+	//}
 	//printArray(array, n);
 	
-	// This was first attempt for a block distrubtion 	
-/*
-	#pragma omp parallel num_threads(tc) 
-	{
-	
-	    int trank = omp_get_thread_num();	
-	    double i = (double) trank;
-	    double ds =(double) tc;
-	    int limit = (int)floor(n/ds);
-	    int loc_start = i*limit;
-	    int loc_end = limit*i+(limit-1);
-	    mergeSort(array,loc_start,loc_end);
-	    
-	}
 
-	mergeSort(array, 0, n - 1);
-*/	
-	
-
-	#pragma omp parallel num_threads(tc) 
+	#pragma omp parallel num_threads(tc)
 	{
 	
 	    // Blocked distribution - Found a way to do it even for odd numbers
@@ -161,8 +156,7 @@ int main(int argc, char*argv[])
 	mergeSort(array, 0, n - 1);
 
 	// Loop that tests if elementes are sorted -- Uncomment to test it
-	/*int max = array[n-1];
-	
+	/*int max = array[n-1];	
 	for(int i = 0 ; i!=n ; i++)
 	{ 
 		if(array[i] > max)
@@ -170,8 +164,20 @@ int main(int argc, char*argv[])
 	}
         */
 
+
+	// Uncomment to print the array in terminal
 	//cout << "\nSorted array is \n";
+	//for(int i = 0; i < (int)array.size() ; i++)
+	//{
+	//	printf("%d ",array[i]);
+	//}
 	//printArray(array, n);
+	
+	
+	// End measuring time
+ 	s = (omp_get_wtime() - s) * 1000.0;	
+	cout << "\nTime elapsed is : " << s << "ms" << endl;
+	
 	
 	FILE *fp_out = fopen("res.txt","w");
 	if(fp_out == NULL)
@@ -186,10 +192,6 @@ int main(int argc, char*argv[])
 	}
 	fclose(fp_out);
 	cout << "Results are stored in res.txt." << endl;
-	
-	// End measuring time
- 	s = (omp_get_wtime() - s) * 1000.0;	
-	cout << "\nTime elapsed is : " << s << "ms" << endl;
 	return 0;
 }
 
