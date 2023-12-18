@@ -105,9 +105,10 @@ int main(int argc, char*argv[])
 	double s = omp_get_wtime();
 	
 	std::vector<int> array;
+	srand(time(NULL));
 	for(int i = 0 ; i < n ; i++)
 	{
-		srand((unsigned) time(&t) + i);
+		//srand((unsigned) time(&t) + i);
 		array.push_back(rand()%200); 
 	}
 	
@@ -145,6 +146,7 @@ int main(int argc, char*argv[])
 	    int loc_end = n*(i + 1)/ds-1;
 	    mergeSort(array,loc_start,loc_end);
 	}
+	
 	
 	//mergeSort(array,0,n-1);
 

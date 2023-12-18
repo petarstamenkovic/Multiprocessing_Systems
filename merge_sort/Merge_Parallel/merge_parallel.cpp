@@ -80,6 +80,7 @@ void mergeSort(vector<int>& array, int const begin, int const end)
 		return;
 
 	int mid = begin + (end - begin) / 2;
+	
 	mergeSort(array, begin, mid);
 	mergeSort(array, mid + 1, end);
 	merge(array, begin, mid, end);
@@ -114,7 +115,7 @@ int main(int argc, char*argv[])
 		array.push_back(rand()%500); 
 	}
 	
-	
+	/*
 	FILE *fp_in = fopen("input.txt","w");
 	if(fp_in == NULL)
 	{
@@ -128,16 +129,15 @@ int main(int argc, char*argv[])
 	}
 	fclose(fp_in);
 	cout << "Input is stored in input.txt." << endl;
-	
+	*/
 
 	// Uncomment to print an initial array in terminal
-	//cout << "Given array is \n";
-	//for(int i = 0; i < (int)array.size() ; i++)
-	//{
-	//	printf("%d ",array[i]);
-	//}
+	cout << "Given array is \n";
+	for(int i = 0; i < (int)array.size() ; i++)
+	{
+		printf("%d ",array[i]);
+	}
 	//printArray(array, n);
-	
 
 	#pragma omp parallel num_threads(tc)
 	{
@@ -150,7 +150,6 @@ int main(int argc, char*argv[])
 	    int loc_end = n*(i + 1)/ds-1;
 	    //printf("Start = %d, end = %d\n", loc_start, loc_end);
 	    mergeSort(array,loc_start,loc_end);
-	    
 	}
 
 	mergeSort(array, 0, n - 1);
@@ -166,11 +165,11 @@ int main(int argc, char*argv[])
 
 
 	// Uncomment to print the array in terminal
-	//cout << "\nSorted array is \n";
-	//for(int i = 0; i < (int)array.size() ; i++)
-	//{
-	//	printf("%d ",array[i]);
-	//}
+	cout << "\nSorted array is \n";
+	for(int i = 0; i < (int)array.size() ; i++)
+	{
+		printf("%d ",array[i]);
+	}
 	//printArray(array, n);
 	
 	
@@ -178,7 +177,7 @@ int main(int argc, char*argv[])
  	s = (omp_get_wtime() - s) * 1000.0;	
 	cout << "\nTime elapsed is : " << s << "ms" << endl;
 	
-	
+	/*
 	FILE *fp_out = fopen("res.txt","w");
 	if(fp_out == NULL)
 	{
@@ -192,9 +191,9 @@ int main(int argc, char*argv[])
 	}
 	fclose(fp_out);
 	cout << "Results are stored in res.txt." << endl;
+	*/
 	return 0;
 }
 
-// This code is contributed by Petar Stamenkovic
-// This code was revised by Joshua Estes
+// This code is contributed by Petar Stamenkovic & Ivan Milin
 
