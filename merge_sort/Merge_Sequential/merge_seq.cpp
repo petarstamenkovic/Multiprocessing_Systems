@@ -98,14 +98,26 @@ void mergeSort(vector<int>& array,
 	merge(array, begin, mid, end); 
 } 
 
-// UTILITY FUNCTIONS 
-// Function to print an array 
-void printArray(int A[], int size) 
-{ 
-	for (auto i = 0; i < size; i++) 
-		cout << A[i] << " "; 
-	cout<<endl; 
-} 
+void checkSort(const std::vector<int>& array)
+{
+	int flag = 0;
+	int min;
+	
+	for(int i = 1 ; i < (int)array.size() ; i++)
+	{
+		min = array[i-1];
+		if(array[i] < min)
+		{
+			flag = 1;
+			break;
+		}
+	}
+	
+	if(flag == 0)
+		printf("\nArray sorted well.\n");
+	else 
+		printf("\nArray not sorted well.\n");	
+}
 
 // Driver code 
 int main() 
@@ -115,34 +127,51 @@ int main()
    	cout << "Insert a lenght of an array: " << endl;
   	cin >> n ;
     
-   	 //int inital_array[n];
     	std::vector<int> array;
-    
-    	auto start = high_resolution_clock::now();
-    	//for(int i = 0; i<n ; i++)
-   	 //{
-   	 //   srand(i);
-   	 //    inital_array[i] = rand()%500;
-   	 //}
     
 	for(int i = 0 ; i < n ; i++)
 	{
 		srand((unsigned) time(&t) + i);
-		//array[i] = rand()%200;
 		array.push_back(rand()%500); 
 	}
-    
-	//cout << "Given array is "<<endl; 
-	//printArray(inital_array, n); 
-
-	mergeSort(array, 0, n - 1); 
-
-	//cout << "Sorted array is "<<endl; 
-	//printArray(inital_array, n); 
 	
+	FILE *fp_in = fopen("input.txt","w");
+	if(fp_in == NULL)
+	{
+		cout << "Failed to open a file" << endl;
+		return 1;
+	}
+	for(int i = 0; i < n ; i++)
+	{
+		fprintf(fp_in,"%d ",array[i]);
+	}
+	fclose(fp_in);
+	cout << "Results are stored in input.txt." << endl;
+	
+	
+	auto start = high_resolution_clock::now();
+	
+	mergeSort(array, 0, n - 1);
+	 
 	auto stop = high_resolution_clock::now();
 	auto duration = duration_cast<milliseconds>(stop - start);
 	cout << "Elapsed time is : " << duration.count() << "ms."<< endl;
+	
+	FILE *fp_out = fopen("res.txt","w");
+	if(fp_out == NULL)
+	{
+		cout << "Failed to open a file" << endl;
+		return 1;
+	}
+	
+	for(int i = 0; i < n ; i++)
+	{
+		fprintf(fp_out,"%d ",array[i]);
+	}
+	fclose(fp_out);
+	cout << "Results are stored in res.txt." << endl;
+	
+	checkSort(array);
 
 	return 0; 
 } 

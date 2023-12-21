@@ -84,59 +84,66 @@ void mergeSort(vector<int>& array, int const begin, int const end)
 	merge(array, begin, mid, end);
 }
 
-// UTILITY FUNCTIONS
-// Function to print an array
-void printArray(int A[], int size)
+void checkSort(const std::vector<int>& array)
 {
-	for (int i = 0; i < size; i++)
-		cout << A[i] << " ";
-	cout << endl;
+	int flag = 0;
+	int min;
+	
+	for(int i = 1 ; i < (int)array.size() ; i++)
+	{
+		min = array[i-1];
+		if(array[i] < min)
+		{
+			flag = 1;
+			break;
+		}
+	}
+	
+	if(flag == 0)
+		printf("\nArray sorted well.\n");
+	else 
+		printf("\nArray not sorted well.\n");	
 }
 
-// Driver code
+void printVector(const std::vector<int>& array)
+{
+	for(int i = 0; i < (int)array.size(); i++)
+	{
+		printf("%d ",array[i]);
+	}
+}
+
+// MAIN CODE ------------------------------------------------------------------------------------
 int main(int argc, char*argv[])
 {	
-	time_t t;
+	//time_t t;
 	// Number of threads 
 	int tc = strtol(argv[1],NULL,10);
 	int n = strtol(argv[2],NULL,10); 
-	
-	// Start measuring time
-	double s = omp_get_wtime();
 	
 	std::vector<int> array;
 	srand(time(NULL));
 	for(int i = 0 ; i < n ; i++)
 	{
-		//srand((unsigned) time(&t) + i);
 		array.push_back(rand()%200); 
 	}
 	
-	/*
+	// Store an array in input file
 	FILE *fp_in = fopen("input.txt","w");
 	if(fp_in == NULL)
 	{
 		cout << "Failed to open a file" << endl;
 		return 1;
 	}
-	
 	for(int i = 0; i < n ; i++)
 	{
 		fprintf(fp_in,"%d ",array[i]);
 	}
 	fclose(fp_in);
 	cout << "Input is stored in input.txt." << endl;
-	*/
-
-	// Uncomment to print an initial array in terminal
-	//cout << "Given array is \n";
-	//for(int i = 0; i < (int)array.size() ; i++)
-	//{
-	//	printf("%d ",array[i]);
-	//}
-	//printArray(array, n);
 	
-	
+	// Start measuring time
+	double s = omp_get_wtime();
 	#pragma omp parallel num_threads(tc)
 	{ 
 	    int trank = omp_get_thread_num();	
@@ -147,69 +154,15 @@ int main(int argc, char*argv[])
 	    mergeSort(array,loc_start,loc_end);
 	}
 	
-	
-	//mergeSort(array,0,n-1);
+	//printVector(array);
+	merge(array,0,n/2-1,n-1);
 
-	// Zelimo da svaka nit odradi jednu sekciju
-	#pragma omp parallel sections
-	{
-		#pragma omp section
-		{
-			mergeSort(array, 0, n/8);
-		}
-		#pragma omp section
-		{
-			mergeSort(array, n/8+1, 2*n/8);
-		}
-		#pragma omp section
-		{
-			mergeSort(array, 2*n/8+1, 3*n/8);
-		}
-		#pragma omp section
-		{
-			mergeSort(array, 3*n/8+1, 4*n/8);
-		}
-		#pragma omp section
-		{
-			mergeSort(array, 4*n/8+1, 5*n/8);
-		}
-		#pragma omp section
-		{
-			mergeSort(array, 5*n/8+1, 6*n/8);
-		}
-		#pragma omp section
-		{
-			mergeSort(array, 6*n/8+1, 7*n/8);
-		}
-		#pragma omp section
-		{
-			mergeSort(array, 7*n/8+1, n-1);
-		}
-	}
-	// Loop that tests if elementes are sorted -- Uncomment to test it
-	/*int max = array[n-1];	
-	for(int i = 0 ; i!=n ; i++)
-	{ 
-		if(array[i] > max)
-			printf("\nNot good!\n");
-	}
-        */
-
-
-	// Uncomment to print the array in terminal
-	//cout << "\nSorted array is \n";
-	//for(int i = 0; i < (int)array.size() ; i++)
-	//{
-	//	printf("%d ",array[i]);
-	//}
-	//printArray(array, n);
-	
 	
 	// End measuring time
  	s = (omp_get_wtime() - s) * 1000.0;	
 	cout << "\nTime elapsed is : " << s << "ms" << endl;
 	
-	/*
+	
 	FILE *fp_out = fopen("res.txt","w");
 	if(fp_out == NULL)
 	{
@@ -223,10 +176,9 @@ int main(int argc, char*argv[])
 	}
 	fclose(fp_out);
 	cout << "Results are stored in res.txt." << endl;
-	*/
+	
+	checkSort(array);
 	return 0;
 }
 
-// This code is contributed by Petar Stamenkovic
-// This code was revised by Joshua Estes
 
