@@ -112,12 +112,12 @@ void printVector(const std::vector<int>& array)
 	{
 		printf("%d ",array[i]);
 	}
+	cout << "\n" << endl;
 }
 
 // MAIN CODE ------------------------------------------------------------------------------------
 int main(int argc, char*argv[])
 {	
-	//time_t t;
 	// Number of threads 
 	int tc = strtol(argv[1],NULL,10);
 	int n = strtol(argv[2],NULL,10); 
@@ -144,28 +144,113 @@ int main(int argc, char*argv[])
 	cout << "Input is stored in input.txt." << endl;
 
 	int depth = (int)ceil(log2(tc));
-	cout << "Depth is : " << depth << endl;
-	int num_arrays = pow(2,depth);
-	int loc_size = n / num_arrays;
+	int num_arrays = pow(2,depth);	
+	int loc_size = (int)floor(((float)n/(float)num_arrays));
+	int loc_size_odd = (int)ceil(((float)n/(float)num_arrays));
 	int j,loc_start,loc_end;
+	int p = 0;
+	int t = 0;
+	
 	// Start measuring time
 	double s = omp_get_wtime();
-	#pragma omp parallel for schedule(dynamic) num_threads(tc)
-	for(int i = 0; i < num_arrays ; i++)
-	{
-		j = i+1;
-	        loc_start = i*loc_size;
-		loc_end = j*loc_size-1;
-		mergeSort(array,loc_start,loc_end);  
-	}
 	
+	if(n % tc == 0)
+	{
+		#pragma omp parallel for private(loc_start,loc_end,j) schedule(static,1) num_threads(tc)
+		for(int i = 0; i < num_arrays ; i++)
+		{
+			j = i+1;	
+			loc_start = i*loc_size;
+			loc_end = j*loc_size-1;
+			mergeSort(array,loc_start,loc_end);
+			printf("Iteration = %d , loc_start = %d , loc_end = %d \n",i,loc_start,loc_end);  
+		}
+	}
+	else 
+	{
+		#pragma omp parallel for private(loc_start,loc_end,p) schedule(static,1) num_threads(tc)
+		for(int i = 0; i < num_arrays ; i++)
+		{
+			int trank = omp_get_thread_num();
+			if(trank % 2 == 0)
+			{
+				// Parni podnizovi
+				t = trank/2;
+				loc_start = loc_size*trank+t;
+				loc_end = loc_start + (loc_size-1);
+				mergeSort(array,loc_start,loc_end);
+				printf("Iteration = %d , t = %d , trank = %d , loc_start = %d , loc_end = %d \n",i,t,trank,loc_start,loc_end);
+			}
+			else
+			{
+				// Neparni podnizovi
+				if(trank == 1)
+				{
+					 p = 0;
+				}
+				else	
+				{
+					 p = (int)floor((float)trank/2);
+				}	
+				loc_start = loc_size*trank+p;
+				loc_end = loc_start + (loc_size_odd-1);
+				mergeSort(array,loc_start,loc_end);
+				printf("Iteration = %d , p = %d , trank = %d , loc_start = %d , loc_end = %d \n",i,p,trank,loc_start,loc_end);
+			}	
+		}
+	
+	}
+		
 	printVector(array);
+	//-------------------------- REACHED THE DEPTH AND SORTED SUBARRAYS ------------------
 	
-	#pragma omp parallel for schedule(dynamic) num_threads
-	for(int k = depth ; k !=1 ; k=k/2)
+	/*
+	int loc_mid;
+	if(n % tc == 0)
 	{
-		merge(array,)
+		while(num_arrays > 1)
+		{
+			loc_size = n/num_arrays;
+			#pragma omp parallel for private(loc_start,loc_end,loc_mid) schedule (static,1) num_threads(2)
+			for(int k = 0; k < num_arrays ; k=k+2)
+			{
+
+				loc_start = k*loc_size; 
+				loc_end = loc_start+(2*loc_size)-1; 
+				loc_mid = (int)floor((loc_start+loc_end)/2);
+				merge(array,loc_start,loc_mid,loc_end);
+				//printf("k = %d, Loc_start = %d, loc_mid = %d, loc_end = %d, loc_size = %d, num_arrays = %d\n",k,loc_start,loc_mid,loc_end,loc_size,num_arrays); 
+			}
+			num_arrays = num_arrays/2;
+			
+		}
 	}
+	else 
+	{
+		while(num_arrays > 1)
+		{
+			loc_size = n/num_arrays;
+			loc_size_odd = (int)ceil((float)n/(float)num_arrays);
+			#pragma omp parallel for private(loc_start,loc_mid,loc_end) schedule(static,1) num_threads(2)
+			for(int k = 0; k < num_arrays ; k=k+2)
+			{	
+				int trank = omp_get_thread_num();
+				loc_start = k*loc_size+trank;
+				loc_end = loc_start + (loc_size + loc_size_odd - 1);
+				if((loc_start+loc_end) % 2 == 0)
+					loc_mid = ((loc_start+loc_end)/2)-1;
+				else 
+					loc_mid = (int)floor(((float)loc_start + (float)loc_end)/2);
+				merge(array,loc_start,loc_mid,loc_end);	
+				printf("k = %d, Loc_start = %d, loc_mid = %d, loc_end = %d, loc_size = %d, num_arrays = %d\n",k,loc_start,loc_mid,loc_end,loc_size,num_arrays);
+			}
+			num_arrays = num_arrays/2;
+		}
+	}
+	
+	*/
+	//printVector(array); 
+	
 	
 	// End measuring time
  	s = (omp_get_wtime() - s) * 1000.0;	
