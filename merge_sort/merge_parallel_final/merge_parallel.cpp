@@ -4,11 +4,9 @@
 #include <math.h>
 #include <bits/stdc++.h>
 #include <vector>
+#include <math.h>
 using namespace std;
 
-// Merges two subarrays of array[].
-// First  subarray is arr[begin..mid]
-// Second subarray is arr[mid+1..end]
 void merge(std::vector<int>& array, int const left, int const mid,
 		int const right)
 {
@@ -75,7 +73,7 @@ void merge(std::vector<int>& array, int const left, int const mid,
 // begin is for left index and end is right index
 // of the sub-array of arr to be sorted
 void mergeSort(vector<int>& array, int const begin, int const end)
-{
+{	// Create a global array and modified mergeSort function that saves mid values and returns in case we reach num_arrays?
 	if (begin >= end)
 		return;
 	int mid = begin + (end - begin) / 2;
@@ -84,6 +82,7 @@ void mergeSort(vector<int>& array, int const begin, int const end)
 	merge(array, begin, mid, end);
 }
 
+// Function that checks if a vector is sorted well
 void checkSort(const std::vector<int>& array)
 {
 	int flag = 0;
@@ -105,23 +104,67 @@ void checkSort(const std::vector<int>& array)
 		printf("\nArray not sorted well.\n");	
 }
 
+// Function that prints the vector
 void printVector(const std::vector<int>& array)
 {
 	for(int i = 0; i < (int)array.size(); i++)
 	{
 		printf("%d ",array[i]);
 	}
+	cout << "\n" << endl;
+}
+
+// Help function used in merge process - Sums first k elements in a vector
+int sum(const std::vector<int> vector,int k)
+{
+	int res = 0;
+	if(k == 0)
+		return res;
+	for(int i = 0 ; i < k ; i++)
+	{
+		res = res + vector[i];
+	}
+	return res;
+}
+
+// Function that gets the sizes of subarrays
+void divide(vector<int>& subSizes, int size,int num_arrays)
+{
+    int help = num_arrays;
+    int left_size,right_size;
+    
+    if(help == 1)
+    	return;
+ 	
+    if(help > 1)
+    {
+	    left_size = size/2;
+	    right_size = size - left_size;
+	    if(help == 2)
+	    {
+	    	subSizes.push_back(left_size);
+	    	subSizes.push_back(right_size);
+	    }
+	    help = help / 2;
+	  
+	    divide(subSizes,left_size,help);
+	    divide(subSizes,right_size,help);
+    }
 }
 
 // MAIN CODE ------------------------------------------------------------------------------------
 int main(int argc, char*argv[])
 {	
-	//time_t t;
 	// Number of threads 
 	int tc = strtol(argv[1],NULL,10);
 	int n = strtol(argv[2],NULL,10); 
 	
-	std::vector<int> array;
+	// Used vectors
+	vector<int> subSizes;
+	vector<int> array;
+	vector<int> help;
+	
+	// Creating a random array of numbers
 	srand(time(NULL));
 	for(int i = 0 ; i < n ; i++)
 	{
@@ -141,22 +184,74 @@ int main(int argc, char*argv[])
 	}
 	fclose(fp_in);
 	cout << "Input is stored in input.txt." << endl;
+
+	int depth = (int)ceil(log2(tc));	
+	int num_arrays = pow(2,depth);	
+	int loc_start,loc_end;
+
+	divide(subSizes,n,num_arrays);
 	
 	// Start measuring time
 	double s = omp_get_wtime();
-	#pragma omp parallel num_threads(tc)
-	{ 
-	    int trank = omp_get_thread_num();	
-	    double i = (double) trank;
-	    double ds =(double) tc;
-	    int loc_start  = n*i/ds;
-	    int loc_end = n*(i + 1)/ds-1;
-	    mergeSort(array,loc_start,loc_end);
+	
+	#pragma omp parallel for private(loc_start,loc_end) schedule(static,1) num_threads(tc)
+	for(int i = 0 ; i < num_arrays; i++)
+	{
+			loc_start = sum(subSizes,i);
+			loc_end = loc_start + subSizes[i] - 1;
+			mergeSort(array,loc_start,loc_end);
 	}
 	
-	//printVector(array);
-	merge(array,0,n/2-1,n-1);
+	//-------------------------- REACHED THE DEPTH AND SORTED SUBARRAYS ------------------
+	
+	int loc_mid;
+	while(num_arrays > 1)
+	{
+		#pragma omp parallel for private(loc_start,loc_mid,loc_end) schedule(static,1) num_threads(tc)
+		for(int k = 0 ; k < num_arrays ; k = k + 2)
+		{
+			int trank = omp_get_thread_num();
+			if(trank == 0)
+			{
+				loc_start = 0;
+				loc_end = subSizes[k] + subSizes[k+1] - 1;
+				if((loc_start+loc_end) % 2 == 0)
+					loc_mid = ((loc_start+loc_end)/2)-1;
+				else 
+					loc_mid = (int)floor(((float)loc_start + (float)loc_end)/2);
+				merge(array,loc_start,loc_mid,loc_end);
 
+			}
+			else
+			{
+				loc_start = sum(subSizes,k);
+				loc_end = (loc_start + subSizes[k] + subSizes[k+1])-1;
+				if((loc_start+loc_end) % 2 == 0)
+					loc_mid = ((loc_start+loc_end)/2)-1;
+				else 
+					loc_mid = (int)floor(((float)loc_start + (float)loc_end)/2);
+				merge(array,loc_start,loc_mid,loc_end);
+			}
+		}
+		num_arrays = num_arrays/2;
+		// Due to shrinking of a subSize, we need to transfer elements in help and clear out the subSizes
+		// and then move new values to shrinked subSizes.
+		for(int s = 0 ; s < (int)subSizes.size() ; s=s+2)
+		{
+			int elem = subSizes[s] + subSizes[s+1];
+			help.push_back(elem);
+		}
+		subSizes.clear();
+		for(int s = 0 ; s < (int)help.size();s++)
+		{
+			subSizes.push_back(help[s]);
+		}
+		help.clear();
+	}
+	
+	// Uncomment to view a sorted array 
+	// printVector(array); 
+	
 	
 	// End measuring time
  	s = (omp_get_wtime() - s) * 1000.0;	
@@ -180,5 +275,3 @@ int main(int argc, char*argv[])
 	checkSort(array);
 	return 0;
 }
-
-

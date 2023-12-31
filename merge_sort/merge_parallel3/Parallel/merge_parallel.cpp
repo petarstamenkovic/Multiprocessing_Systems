@@ -76,7 +76,7 @@ void merge(std::vector<int>& array, int const left, int const mid,
 // begin is for left index and end is right index
 // of the sub-array of arr to be sorted
 void mergeSort(vector<int>& array, int const begin, int const end)
-{
+{	// Create a global array and modified mergeSort function that saves mid values and returns in case we reach num_arrays?
 	if (begin >= end)
 		return;
 	int mid = begin + (end - begin) / 2;
